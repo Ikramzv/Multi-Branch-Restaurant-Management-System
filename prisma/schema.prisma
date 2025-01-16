@@ -1,0 +1,90 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+    id   String @id @default(uuid())
+    name String
+
+    defaultLocale String @default("en")
+
+    createdAt DateTime @default(now()) @db.Timestamp(6)
+    updatedAt DateTime @updatedAt @db.Timestamp(6)
+
+    branches Branch[]
+
+    @@unique([name])
+    @@map("restaurants")
+}
+
+model Branch {
+    id            String  @id @default(uuid())
+    name          String
+    timezone      String
+    isHeadquarter Boolean @default(false)
+
+    restaurantId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+    Menu       Menu[]
+
+    @@unique([name, timezone, restaurantId])
+    @@index([restaurantId])
+    @@map("branches")
+}
+
+model Menu {
+    id String @id @default(uuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    branchId String
+
+    menuItems MenuItem[]
+
+    branch Branch @relation(fields: [branchId], references: [id])
+
+    @@index([branchId])
+    @@map("menus")
+}
+
+model MenuItem {
+    id     String  @id @default(uuid())
+    price  Decimal
+    menuId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    translations MenuItemTranslation[]
+
+    menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+    @@index([menuId])
+    @@map("menu_items")
+}
+
+model MenuItemTranslation {
+    id String @id @default(uuid())
+
+    menuItemId String
+    locale     String
+    name       String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+    @@unique([menuItemId, locale])
+    @@map("menu_item_translations")
+}
