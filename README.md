@@ -6,7 +6,6 @@
    cd restaurant-management
    ```
 
-````
 
 2. Install dependencies:
 
