@@ -25,7 +25,7 @@ model Restaurant {
 model Branch {
     id            String  @id @default(uuid())
     name          String
-    timezone      String
+    timezone      String  @default("UTC")
     isHeadquarter Boolean @default(false)
 
     restaurantId String
@@ -34,7 +34,7 @@ model Branch {
     updatedAt DateTime @updatedAt
 
     restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-    Menu       Menu[]
+    menus      Menu[]
 
     @@unique([name, timezone, restaurantId])
     @@index([restaurantId])
@@ -53,8 +53,22 @@ model Menu {
 
     branch Branch @relation(fields: [branchId], references: [id])
 
+    sourceOf MenuRelation[] @relation("SourceMenus")
+    targetOf MenuRelation[] @relation("TargetMenus")
+
     @@index([branchId])
     @@map("menus")
+}
+
+model MenuRelation {
+    targetMenuId String
+    sourceMenuId String
+
+    targetMenu Menu @relation("TargetMenus", fields: [targetMenuId], references: [id], onDelete: Cascade)
+    sourceMenu Menu @relation("SourceMenus", fields: [sourceMenuId], references: [id], onDelete: Cascade)
+
+    @@id([targetMenuId, sourceMenuId])
+    @@map("menu_relations")
 }
 
 model MenuItem {

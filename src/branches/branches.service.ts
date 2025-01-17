@@ -19,7 +19,22 @@ export class BranchesService {
   async findOne(id: string) {
     const branch = await this.repository.findOne(id);
     if (!branch) {
-      throw new NotFoundException(`Branch with ID ${id} not found`);
+      throw new NotFoundException(`Branch not found`);
+    }
+
+    return branch;
+  }
+
+  async findRestaurantHQ(restaurantId: string) {
+    const branch = await this.repository.findOneByFilter({
+      restaurantId,
+      isHeadquarter: true,
+    });
+
+    if (!branch) {
+      throw new NotFoundException(
+        `Branch with restaurant ID ${restaurantId} not found`,
+      );
     }
     return branch;
   }

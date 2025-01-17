@@ -19,7 +19,7 @@ export class RestaurantsService {
   async findOne(id: string) {
     const restaurant = await this.repository.findOne(id);
     if (!restaurant) {
-      throw new NotFoundException(`Restaurant with ID ${id} not found`);
+      throw new NotFoundException(`Restaurant not found`);
     }
     return restaurant;
   }

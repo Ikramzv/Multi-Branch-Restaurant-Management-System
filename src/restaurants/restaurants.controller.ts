@@ -7,8 +7,9 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {} from 'date-fns-tz';
+import { ApiOperation, ApiResponse, ApiTags, OmitType } from '@nestjs/swagger';
+import { BranchesService } from 'src/branches/branches.service';
+import { TimezoneConversion } from 'src/common/decorators/timezone-conversion.decorator';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { RestaurantResponseDto } from './dto/restaurant.response.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
@@ -17,7 +18,10 @@ import { RestaurantsService } from './restaurants.service';
 @ApiTags('Restaurants')
 @Controller('restaurants')
 export class RestaurantsController {
-  constructor(private readonly restaurantsService: RestaurantsService) {}
+  constructor(
+    private readonly restaurantsService: RestaurantsService,
+    private readonly branchesService: BranchesService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new restaurant' })
@@ -38,13 +42,24 @@ export class RestaurantsController {
     type: RestaurantResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Restaurant not found' })
-  findOne(@Param('id') id: string) {
-    return this.restaurantsService.findOne(id);
+  @TimezoneConversion('timezone')
+  async findOne(@Param('id') id: string) {
+    const restaurant = await this.restaurantsService.findOne(id);
+    const branch = await this.branchesService.findRestaurantHQ(restaurant.id);
+
+    return {
+      ...restaurant,
+      timezone: branch.timezone,
+    };
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a restaurant' })
-  @ApiResponse({ status: 200, description: 'Restaurant successfully updated' })
+  @ApiResponse({
+    status: 200,
+    type: [OmitType(RestaurantResponseDto, ['branches'])],
+    description: 'Restaurant successfully updated',
+  })
   @ApiResponse({ status: 404, description: 'Restaurant not found' })
   update(
     @Param('id') id: string,

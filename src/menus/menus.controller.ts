@@ -1,5 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BranchesService } from 'src/branches/branches.service';
+import { TimezoneConversion } from 'src/common/decorators/timezone-conversion.decorator';
+import { CopyMenuDto } from './dto/copy-menu.dto';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { MenuResponseDto } from './dto/menu.response.dto';
 import { MenusService } from './menus.service';
@@ -7,7 +10,10 @@ import { MenusService } from './menus.service';
 @ApiTags('Menus')
 @Controller('menus')
 export class MenusController {
-  constructor(private readonly menusService: MenusService) {}
+  constructor(
+    private readonly menusService: MenusService,
+    private readonly branchesService: BranchesService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new menu' })
@@ -28,8 +34,26 @@ export class MenusController {
     type: MenuResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Menu not found' })
-  findOne(@Param('id') id: string) {
-    return this.menusService.findOne(id);
+  @TimezoneConversion('timezone')
+  async findOne(@Param('id') id: string) {
+    const menu = await this.menusService.findOneWithItems(id);
+    const branch = await this.branchesService.findOne(menu.branchId);
+
+    return {
+      ...menu,
+      timezone: branch.timezone,
+    };
+  }
+
+  @Post('copy')
+  @ApiOperation({ summary: 'Copy a menu' })
+  @ApiResponse({
+    status: 200,
+    description: 'Menu successfully copied',
+  })
+  @ApiResponse({ status: 404, description: 'Menu not found' })
+  copy(@Body() copyMenuDto: CopyMenuDto) {
+    return this.menusService.copy(copyMenuDto);
   }
 
   // @Patch(":id")

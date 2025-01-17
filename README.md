@@ -62,6 +62,6 @@ MYSQL_DATABASE=<database_name>
 MYSQL_ROOT_PASSWORD=<root_password>
 MYSQL_USER=<user>
 MYSQL_PASSWORD=<password>
-DATABASE_URL="mysql://<user>:<password>@localhost:3306/<database_name>"
+DATABASE_URL="mysql://root:<MYSQL_ROOT_PASSWORD>@localhost:3306/<MYSQL_DATABASE>"
 ```
 ````

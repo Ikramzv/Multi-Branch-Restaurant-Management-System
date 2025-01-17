@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BranchesModule } from './branches/branches.module';
+import { BranchesModule } from 'src/branches/branches.module';
 import { RestaurantsController } from './restaurants.controller';
 import { RestaurantsRepository } from './restaurants.repository';
 import { RestaurantsService } from './restaurants.service';

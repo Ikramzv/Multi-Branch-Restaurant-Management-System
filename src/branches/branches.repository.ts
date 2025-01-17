@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
@@ -17,8 +18,18 @@ export class BranchesRepository {
     return this.prisma.branch.findUnique({
       where: { id },
       include: {
-        restaurant: true,
+        menus: true,
       },
+    });
+  }
+
+  async findOneByFilter(
+    filter: Prisma.BranchWhereInput,
+    include?: Prisma.BranchInclude,
+  ) {
+    return this.prisma.branch.findFirst({
+      where: filter,
+      include,
     });
   }
 
